@@ -1,0 +1,26 @@
+# Default values for blueprint-azure-standard
+# This chart renders ArgoCD Application manifests for Azure AKS clusters
+
+# Versions (injected by ../fleet)
+versions:
+  system: ""      # Ingress Nginx, Cert Manager
+  stack: ""       # JetScale App
+  observability: ""  # Loki/Grafana
+
+# Repository configuration
+repositories:
+  observability:
+    repoURL: oci://ghcr.io/jetscale-ai/charts/observability-core
+  stack:
+    repoURL: ""   # To be configured per cluster
+
+# Cluster configuration
+cluster:
+  name: ""        # Injected by fleet
+  server: ""      # Injected by fleet
+
+# Application enablement flags
+enabled:
+  system: true
+  stack: true
+  observability: true

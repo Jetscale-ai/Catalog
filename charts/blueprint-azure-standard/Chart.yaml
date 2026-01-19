@@ -1,0 +1,6 @@
+apiVersion: v2
+name: blueprint-azure-standard
+description: Standard blueprint for Azure AKS clusters - renders ArgoCD Application objects
+type: application
+version: 0.1.0
+appVersion: "1.0"
