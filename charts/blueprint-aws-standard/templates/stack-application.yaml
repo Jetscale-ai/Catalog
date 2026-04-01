@@ -1,0 +1,51 @@
+{{- if .Values.enabled.stack }}
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: {{ include "blueprint.fullname" . }}-stack
+  namespace: {{ .Values.argocd.namespace }}
+  labels:
+    {{- include "blueprint.argoLabels" . | nindent 4 }}
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: {{ .Values.argocd.project }}
+
+  sources:
+    # Source 1: Helm values from the stack repo (layered, per-environment)
+    - repoURL: {{ .Values.repositories.stackValues.repoURL }}
+      targetRevision: {{ .Values.repositories.stackValues.targetRevision }}
+      ref: stackValues
+
+    # Source 2: OCI chart from GHCR
+    - repoURL: {{ .Values.repositories.stack.repoURL }}
+      chart: {{ .Values.repositories.stack.chart }}
+      targetRevision: {{ .Values.versions.stack }}
+      helm:
+        releaseName: {{ .Values.stack.namespace }}
+        valueFiles:
+          {{- range .Values.stack.valueFiles }}
+          - $stackValues/{{ . }}
+          {{- end }}
+          {{- range .Values.stack.extraValueFiles | default list }}
+          - $stackValues/{{ . }}
+          {{- end }}
+
+  destination:
+    server: {{ .Values.cluster.server }}
+    namespace: {{ .Values.stack.namespace }}
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace={{ .Values.stack.createNamespace }}
+      - ServerSideApply=true
+    retry:
+      limit: 3
+      backoff:
+        duration: 30s
+        factor: 2
+        maxDuration: 3m
+{{- end }}

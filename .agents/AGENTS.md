@@ -17,21 +17,28 @@ helm lint charts/blueprint-azure-standard
 ### Render Preview (Dry-Run)
 
 Verify that blueprint templates render valid ArgoCD `Application` manifests
-before committing:
+before committing.
+
+**With inline overrides:**
 
 ```bash
-helm template test-cluster charts/blueprint-aws-standard \
+helm template global-services-live charts/blueprint-aws-standard \
   --set versions.stack=0.32.1 \
-  --set versions.observability=1.0.0 \
-  --set enabled.stack=true \
-  --set enabled.observability=true \
-  --set cluster.name=test-cluster \
-  --set "cluster.server=https://kubernetes.default.svc" \
-  --set "repositories.stack.repoURL=oci://ghcr.io/jetscale-ai/charts/jetscale"
+  --set cluster.name=global-services-live \
+  --set stack.namespace=jetscale-console \
+  --set "stack.extraValueFiles[0]=envs/aws/prod/jetscale-console.yaml"
 ```
 
-Expected: valid YAML containing `apiVersion: argoproj.io/v1alpha1` Application
-resources with correct `repoURL`, `targetRevision`, and `destination` fields.
+**With fleet values file (end-to-end preview):**
+
+```bash
+helm template global-services-live charts/blueprint-aws-standard \
+  -f ../fleet/clusters/global-services-live/values.yaml
+```
+
+Expected: valid YAML containing `apiVersion: argoproj.io/v1alpha1` multi-source
+`Application` resources with `$stackValues` refs, correct `repoURL`,
+`targetRevision`, and `destination` fields.
 
 ### Chart Packaging
 
@@ -121,5 +128,5 @@ global-argocd
 
 | Chart | Cloud | Status | Purpose |
 | :--- | :--- | :--- | :--- |
-| `blueprint-aws-standard` | AWS (EKS) | Scaffold (templates pending) | Standard shape for AWS clusters |
+| `blueprint-aws-standard` | AWS (EKS) | **Active (MVP)** | Multi-source Application: catalog OCI chart + stack values |
 | `blueprint-azure-standard` | Azure (AKS) | Scaffold (templates pending) | Standard shape for Azure clusters |

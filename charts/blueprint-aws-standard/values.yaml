@@ -1,26 +1,43 @@
 # Default values for blueprint-aws-standard
-# This chart renders ArgoCD Application manifests for AWS EKS clusters
+# This chart renders ArgoCD Application manifests for AWS EKS clusters.
+# Instance-specific values are injected by ../fleet per-cluster values.yaml.
 
-# Versions (injected by ../fleet)
+# ArgoCD project that owns the rendered Applications
+argocd:
+  project: global-services
+  namespace: argocd
+
+# Versions (injected by ../fleet — no defaults; must be pinned)
 versions:
-  system: ""      # Ingress Nginx, Cert Manager
-  stack: ""       # JetScale App
-  observability: ""  # Loki/Grafana
+  stack: ""
+  observability: ""
 
 # Repository configuration
 repositories:
+  stack:
+    repoURL: oci://ghcr.io/jetscale-ai/charts/jetscale
+    chart: jetscale
+  stackValues:
+    repoURL: https://github.com/Jetscale-ai/stack.git
+    targetRevision: main
   observability:
     repoURL: oci://ghcr.io/jetscale-ai/charts/observability-core
-  stack:
-    repoURL: ""   # To be configured per cluster
 
-# Cluster configuration
+# Cluster identity (injected by ../fleet)
 cluster:
-  name: ""        # Injected by fleet
-  server: ""      # Injected by fleet
+  name: ""
+  server: https://kubernetes.default.svc
+
+# Per-workload configuration
+stack:
+  namespace: ""
+  createNamespace: true
+  # Ordered list of Helm value files from the stack repo (relative paths)
+  valueFiles:
+    - envs/aws/aws.yaml
+    - envs/aws/prod/default.yaml
 
 # Application enablement flags
 enabled:
-  system: true
   stack: true
-  observability: true
+  observability: false
