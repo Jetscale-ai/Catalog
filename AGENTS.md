@@ -105,12 +105,15 @@ This repository adopts the following Codex artifacts from
   render ArgoCD `Application` objects. It defines **what** can be deployed, not
   **where** it runs or **which version** is active.
 - **Blast radius:** A broken blueprint template affects every cluster that
-  references it once the tag is consumed by Fleet. Changes are medium-risk and
-  must be previewed with `helm template` before tagging.
+  references it once the released OCI version is consumed by
+  `../global-argocd`. Changes are medium-risk and must be previewed with
+  `helm template` before release.
 - **Genericism invariant:** Blueprints must not contain client-specific secrets,
   IDs, or version pins. All instance-specific values are injected by Fleet.
-- **Version discipline:** Changes to `main` do not affect clusters until tagged
-  and referenced in `../fleet`. Tags are immutable release points.
+- **Version discipline:** Changes to `main` do not affect clusters until a
+  released OCI chart version is referenced by `../global-argocd`. Git tags are
+  immutable release markers; OCI chart versions are immutable deployment
+  artifacts.
 - **Composition pattern:** Use the App-of-Apps pattern. Each blueprint chart
   renders ArgoCD `Application` resources for the workloads it governs (system,
   stack, observability).
@@ -122,8 +125,10 @@ This repository adopts the following Codex artifacts from
 - **Cloud abstraction:** Separate blueprint charts per cloud provider
   (`blueprint-aws-standard`, `blueprint-azure-standard`) to keep provider-
   specific concerns (ingress class, secret store type, annotations) isolated.
-- **Fleet dependency:** This repo's consumer is `../fleet`. If Fleet entries
-  reference a tag that doesn't exist here, the failure is in Fleet.
+- **Fleet dependency:** This repo consumes cluster instance state from
+  `../fleet`, while `../global-argocd` consumes the published blueprint OCI
+  chart. If either sibling references a version or contract that doesn't exist
+  here, the failure is in the consumer.
 - **Sibling boundary:** If workload Helm charts need changes, route to
   `../stack` or `../observability`. If cluster infrastructure needs changes,
   route to `../global-argocd` or `../global-cloud-network`.

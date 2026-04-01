@@ -9,12 +9,39 @@ This repo defines **Blueprints** (patterns) as Helm charts that render ArgoCD `A
 - **Why it matters here:** we keep the blueprint *shape* stable and reusable; we never pin live versions in Catalog.
 
 ## Phase 1: The AWS Standard
-- [ ] Create `charts/blueprint-aws-standard`.
-- [ ] Template `argocd/Application` resources for:
-    - `system` (Ingress Nginx, Cert Manager) - *Install First*
-    - `stack` (JetScale App) - *Install Second*
-    - `observability` (Loki/Grafana) - *Install Third*
 
-## Phase 2: The Franchise Kit (Self-Host)
-- [ ] Create `charts/blueprint-self-host`.
-- [ ] Add `enabled` toggles for observability so clients can opt-out.
+- [x] Create `charts/blueprint-aws-standard`.
+- [x] Template the `stack` ArgoCD `Application` for the JetScale app using:
+  - stack OCI chart from GHCR
+  - stack values from `../stack`
+  - cluster instance values from `../fleet`
+- [x] Wire the root control-plane handoff so `../global-argocd` can consume the
+      blueprint as an OCI chart
+- [x] Add CI + OCI publish workflow for the AWS blueprint
+- [ ] Add `observability` child Applications after the stack MVP is stable
+- [ ] Add any required system-layer Applications once the control-plane split is
+      fully settled
+
+## Phase 2: Repo-Wide Release Discipline
+
+- [x] Adopt repo-wide semantic versioning via `go-semantic-release`
+- [x] Publish blueprint OCI artifacts to GHCR
+- [ ] Keep the version stream repo-wide even before Azure is active
+- [ ] Document the contract clearly enough that `../global-argocd` and
+      `../fleet` can consume published versions without ambiguity
+
+## Phase 3: Azure Parity On The Same Version Stream
+
+- [ ] Implement `charts/blueprint-azure-standard`
+- [ ] Publish `blueprint-azure-standard` on the same repo semantic version as
+      AWS releases
+- [ ] Keep the logical workload set aligned across AWS and Azure as much as
+      possible
+- [ ] Confine cloud differences to the platform envelope: ingress, identity,
+      secret store, and other provider-specific wiring
+
+## Phase 4: Broader Franchise Kit
+
+- [ ] Add more reusable blueprints only when a real operating shape exists
+- [ ] Consider self-host / BYOC variants if they diverge materially from the
+      cloud-managed shapes

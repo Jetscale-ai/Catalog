@@ -85,21 +85,39 @@ audit_log:
 
 ## 4. Release Workflow
 
-### Tagging Convention
+### Artifact Contract
 
-Tags follow semantic versioning: `v<major>.<minor>.<patch>`.
+Catalog publishes OCI Helm blueprint charts to GHCR.
 
-```bash
-git tag v0.1.0
-git push origin v0.1.0
-```
+- OCI base: `oci://ghcr.io/jetscale-ai/catalog`
+- Active MVP chart: `blueprint-aws-standard`
+- Release versions follow semantic versioning (`0.1.0`, `0.2.0`, ...)
+- Git tags follow the matching `v<major>.<minor>.<patch>` shape
 
-Fleet entries reference catalog tags via `targetRevision`. A tag is immutable
-once consumed by any cluster.
+`../global-argocd` consumes the published OCI chart version directly via:
+
+- `catalogOciRepo`
+- `catalogBlueprintChart`
+- `catalogBlueprintVersion`
+
+`../fleet` remains the source of instance state and workload version pins.
+
+### Release Automation
+
+The repository release flow uses `go-semantic-release`, following the same
+semantic versioning model as `../stack`, but publishing blueprint charts instead
+of workload charts.
+
+- `ci.yaml` validates charts with `helm lint` and `helm template`
+- `release.yaml` resolves the next semver from conventional commits
+- the workflow updates `Chart.yaml` version fields, packages the chart, and
+  pushes it to GHCR
+- AWS is released first; Azure will join the same repo version stream later
 
 ### Breaking Changes
 
 A major version bump is required when:
+
 - An existing values key is renamed or removed
 - A template is deleted or its rendered output changes incompatibly
 - A new required value is added without a default
@@ -112,21 +130,21 @@ stack / observability (OCI chart registries)
        │
        ▼
 catalog (this repo)
-  └─ blueprint charts render ArgoCD Application objects that reference
-     the OCI charts above
+  └─ publishes blueprint OCI charts that render ArgoCD Application objects
+     referencing the OCI charts above
        │
        ▼
 fleet
-  └─ per-cluster values.yaml pins catalog tag + version overrides
+  └─ per-cluster values.yaml provides instance state + workload version overrides
        │
        ▼
 global-argocd
-  └─ root Application syncs from fleet, ArgoCD reconciles the blueprint
+  └─ root Application reads fleet values and renders the catalog OCI blueprint
 ```
 
 ## 6. Chart Inventory
 
 | Chart | Cloud | Status | Purpose |
 | :--- | :--- | :--- | :--- |
-| `blueprint-aws-standard` | AWS (EKS) | **Active (MVP)** | Multi-source Application: catalog OCI chart + stack values |
+| `blueprint-aws-standard` | AWS (EKS) | **Active (MVP)** | Published OCI blueprint consumed by `global-argocd` |
 | `blueprint-azure-standard` | Azure (AKS) | Scaffold (templates pending) | Standard shape for Azure clusters |

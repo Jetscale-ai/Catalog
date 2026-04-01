@@ -1,0 +1,9 @@
+commitFormat: angular
+
+branch:
+  main: release
+
+release: github
+github:
+  user: "Jetscale-ai"
+  repo: "Catalog"

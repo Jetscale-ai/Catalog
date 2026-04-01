@@ -1,0 +1,52 @@
+name: "CI: Validate Blueprints"
+
+on:
+  pull_request:
+    paths:
+      - "charts/**"
+      - ".github/workflows/**"
+      - ".release.yml"
+      - "README.md"
+      - "ROADMAP.md"
+      - "AGENTS.md"
+      - ".agents/AGENTS.md"
+  push:
+    branches: [main]
+    paths:
+      - "charts/**"
+      - ".github/workflows/**"
+      - ".release.yml"
+      - "README.md"
+      - "ROADMAP.md"
+      - "AGENTS.md"
+      - ".agents/AGENTS.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: "CI: Lint And Render"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+
+      - name: Lint AWS blueprint
+        run: helm lint charts/blueprint-aws-standard
+
+      - name: Lint Azure blueprint
+        run: helm lint charts/blueprint-azure-standard
+
+      - name: Render AWS blueprint
+        run: |
+          helm template global-services-live charts/blueprint-aws-standard \
+            --set versions.stack=0.32.1 \
+            --set cluster.name=global-services-live \
+            --set stack.namespace=jetscale-console \
+            --set "stack.extraValueFiles[0]=envs/aws/prod/jetscale-console.yaml"
