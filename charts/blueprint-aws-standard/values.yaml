@@ -15,7 +15,8 @@ versions:
 # Repository configuration
 repositories:
   stack:
-    repoURL: oci://ghcr.io/jetscale-ai/charts/jetscale
+    # Argo Helm OCI sources point at the published repo base; chart name stays separate.
+    repoURL: ghcr.io/jetscale-ai/charts
     chart: jetscale
   stackValues:
     repoURL: https://github.com/Jetscale-ai/stack.git
