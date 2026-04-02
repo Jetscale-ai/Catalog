@@ -37,6 +37,13 @@ stack:
   valueFiles:
     - envs/aws/aws.yaml
     - envs/aws/prod/default.yaml
+  extraValueFiles: []
+
+# Preferred multi-app configuration for one or more ../stack umbrella apps on a
+# single runtime cluster. When non-empty, the chart renders one child
+# Application per entry. Legacy single-stack values remain supported via the
+# `stack` block above for backward compatibility.
+stackApps: []
 
 # Application enablement flags
 enabled:

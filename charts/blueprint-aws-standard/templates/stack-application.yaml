@@ -1,46 +1,58 @@
-{{- if .Values.enabled.stack }}
+{{- $root := . }}
+{{- $stackApps := .Values.stackApps | default (list) }}
+{{- if eq (len $stackApps) 0 }}
+{{- $stackApps = list (dict
+      "name" "stack"
+      "namespace" .Values.stack.namespace
+      "createNamespace" .Values.stack.createNamespace
+      "valueFiles" .Values.stack.valueFiles
+      "extraValueFiles" (.Values.stack.extraValueFiles | default (list))
+      "enabled" .Values.enabled.stack) }}
+{{- end }}
+{{- range $stackApp := $stackApps }}
+{{- if ($stackApp.enabled | default true) }}
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: {{ include "blueprint.fullname" . }}-stack
-  namespace: {{ .Values.argocd.namespace }}
+  name: {{ include "blueprint.fullname" $root }}-{{ $stackApp.name }}
+  namespace: {{ $root.Values.argocd.namespace }}
   labels:
-    {{- include "blueprint.argoLabels" . | nindent 4 }}
+    {{- include "blueprint.argoLabels" $root | nindent 4 }}
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
-  project: {{ .Values.argocd.project }}
+  project: {{ $root.Values.argocd.project }}
 
   sources:
     # Source 1: Helm values from the stack repo (layered, per-environment)
-    - repoURL: {{ .Values.repositories.stackValues.repoURL }}
-      targetRevision: {{ .Values.repositories.stackValues.targetRevision }}
+    - repoURL: {{ $root.Values.repositories.stackValues.repoURL }}
+      targetRevision: {{ $root.Values.repositories.stackValues.targetRevision }}
       ref: stackValues
 
     # Source 2: OCI chart from GHCR
-    - repoURL: {{ .Values.repositories.stack.repoURL }}
-      chart: {{ .Values.repositories.stack.chart }}
-      targetRevision: {{ .Values.versions.stack }}
+    - repoURL: {{ $root.Values.repositories.stack.repoURL }}
+      chart: {{ $root.Values.repositories.stack.chart }}
+      targetRevision: {{ $root.Values.versions.stack }}
       helm:
-        releaseName: {{ .Values.stack.namespace }}
+        releaseName: {{ $stackApp.namespace }}
         valueFiles:
-          {{- range .Values.stack.valueFiles }}
+          {{- range $stackApp.valueFiles }}
           - $stackValues/{{ . }}
           {{- end }}
-          {{- range .Values.stack.extraValueFiles | default list }}
+          {{- range $stackApp.extraValueFiles | default list }}
           - $stackValues/{{ . }}
           {{- end }}
 
   destination:
-    server: {{ .Values.cluster.server }}
-    namespace: {{ .Values.stack.namespace }}
+    server: {{ $root.Values.cluster.server }}
+    namespace: {{ $stackApp.namespace }}
 
   syncPolicy:
     automated:
       prune: true
       selfHeal: true
     syncOptions:
-      - CreateNamespace={{ .Values.stack.createNamespace }}
+      - CreateNamespace={{ $stackApp.createNamespace }}
       - ServerSideApply=true
     retry:
       limit: 3
@@ -48,4 +60,6 @@ spec:
         duration: 30s
         factor: 2
         maxDuration: 3m
+---
+{{- end }}
 {{- end }}

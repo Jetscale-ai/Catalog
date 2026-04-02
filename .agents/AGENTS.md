@@ -25,8 +25,11 @@ before committing.
 helm template global-services-live charts/blueprint-aws-standard \
   --set versions.stack=0.32.1 \
   --set cluster.name=global-services-live \
-  --set stack.namespace=jetscale-console \
-  --set "stack.extraValueFiles[0]=envs/aws/prod/jetscale-console.yaml"
+  --set "stackApps[0].name=jetscale-console" \
+  --set "stackApps[0].namespace=jetscale-console" \
+  --set "stackApps[0].valueFiles[0]=envs/aws/aws.yaml" \
+  --set "stackApps[0].valueFiles[1]=envs/aws/prod/default.yaml" \
+  --set "stackApps[0].extraValueFiles[0]=envs/aws/prod/jetscale-console.yaml"
 ```
 
 **With fleet values file (end-to-end preview):**
