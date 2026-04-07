@@ -41,15 +41,16 @@ stack / observability
   └─ publish deployable workload OCI charts
 ```
 
-For the current MVP:
+For the current AWS shape:
 
-1. `global-argocd` creates `Application/global-services-root`
-2. that root app uses `../fleet/clusters/global-services-live/values.yaml`
+1. `global-argocd` creates one root `Application` per runtime cluster
+2. that root app uses `../fleet/clusters/<cluster-name>/values.yaml`
 3. it renders `blueprint-aws-standard` from `oci://ghcr.io/jetscale-ai/catalog`
-4. `blueprint-aws-standard` then renders the child ArgoCD app for the JetScale
-   stack
-5. that child app pulls the actual workload chart and layered values from
-   `../stack`
+4. `blueprint-aws-standard` then renders:
+   - one child ArgoCD app per `stackApps[]` entry
+   - zero or one shared `observability-core` child app for the cluster
+5. those child apps pull the actual workload charts from `../stack` and
+   `../observability`
 
 So this repo is the pattern bridge between control-plane bootstrap and workload
 deployment.
@@ -89,7 +90,9 @@ Catalog does not own live version pins for workloads.
 
 - blueprint chart versions are published from this repo
 - workload chart versions are injected into blueprint values by `../fleet`
-- client- or cluster-specific values belong in `../fleet`
+- cluster-specific values belong in `../fleet`
+- the reusable contract is `1..n` stack apps plus optional cluster-wide
+  observability
 
 ### Adding a new capability
 

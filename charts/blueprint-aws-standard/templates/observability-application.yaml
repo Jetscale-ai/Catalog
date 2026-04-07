@@ -1,0 +1,44 @@
+{{- $root := . }}
+{{- $observability := .Values.observability | default dict }}
+{{- $observabilityValues := $observability.values | default dict }}
+{{- if and ($root.Values.enabled.observability | default false) $root.Values.versions.observability }}
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: {{ include "blueprint.fullname" $root }}-observability
+  namespace: {{ $root.Values.argocd.namespace }}
+  labels:
+    {{- include "blueprint.argoLabels" $root | nindent 4 }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "-10"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: {{ $root.Values.argocd.project }}
+  source:
+    repoURL: {{ $root.Values.repositories.observability.repoURL }}
+    chart: {{ $root.Values.repositories.observability.chart }}
+    targetRevision: {{ $root.Values.versions.observability }}
+    helm:
+      releaseName: {{ $observability.releaseName | default "observability" }}
+      {{- if gt (len $observabilityValues) 0 }}
+      values: |
+{{ toYaml $observabilityValues | indent 8 }}
+      {{- end }}
+  destination:
+    server: {{ $root.Values.cluster.server }}
+    namespace: {{ $observability.namespace | default "observability" }}
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace={{ $observability.createNamespace | default true }}
+      - ServerSideApply=true
+    retry:
+      limit: 3
+      backoff:
+        duration: 30s
+        factor: 2
+        maxDuration: 3m
+{{- end }}

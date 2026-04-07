@@ -22,7 +22,8 @@ repositories:
     repoURL: https://github.com/Jetscale-ai/stack.git
     targetRevision: main
   observability:
-    repoURL: oci://ghcr.io/jetscale-ai/charts/observability-core
+    repoURL: ghcr.io/jetscale-ai/charts
+    chart: observability-core
 
 # Cluster identity (injected by ../fleet)
 cluster:
@@ -44,6 +45,12 @@ stack:
 # Application per entry. Legacy single-stack values remain supported via the
 # `stack` block above for backward compatibility.
 stackApps: []
+
+observability:
+  namespace: observability
+  releaseName: observability
+  createNamespace: true
+  values: {}
 
 # Application enablement flags
 enabled:

@@ -18,7 +18,8 @@ This repo defines **Blueprints** (patterns) as Helm charts that render ArgoCD `A
 - [x] Wire the root control-plane handoff so `../global-argocd` can consume the
       blueprint as an OCI chart
 - [x] Add CI + OCI publish workflow for the AWS blueprint
-- [ ] Add `observability` child Applications after the stack MVP is stable
+- [x] Add optional `observability` child Applications alongside one or more
+      `stack` child Applications
 - [ ] Add any required system-layer Applications once the control-plane split is
       fully settled
 
