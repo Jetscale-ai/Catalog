@@ -11,7 +11,7 @@ This repo defines **Blueprints** (patterns) as Helm charts that render ArgoCD `A
 ## Phase 1: The AWS Standard
 
 - [x] Create `charts/blueprint-aws-standard`.
-- [x] Template the `stack` ArgoCD `Application` for the JetScale app using:
+- [x] Template the reusable AWS workload blueprint using:
   - stack OCI chart from GHCR
   - stack values from `../stack`
   - cluster instance values from `../fleet`
@@ -20,6 +20,8 @@ This repo defines **Blueprints** (patterns) as Helm charts that render ArgoCD `A
 - [x] Add CI + OCI publish workflow for the AWS blueprint
 - [x] Add optional `observability` child Applications alongside one or more
       `stack` child Applications
+- [ ] Validate the per-runtime-cluster shape against Fleet paths such as
+      `jetscale-prod`, `codewords-prod`, and `glaciergrid-prod`
 - [ ] Add any required system-layer Applications once the control-plane split is
       fully settled
 
@@ -28,7 +30,7 @@ This repo defines **Blueprints** (patterns) as Helm charts that render ArgoCD `A
 - [x] Adopt repo-wide semantic versioning via `go-semantic-release`
 - [x] Publish blueprint OCI artifacts to GHCR
 - [ ] Keep the version stream repo-wide even before Azure is active
-- [ ] Document the contract clearly enough that `../global-argocd` and
+- [x] Document the contract clearly enough that `../global-argocd` and
       `../fleet` can consume published versions without ambiguity
 
 ## Phase 3: Azure Parity On The Same Version Stream

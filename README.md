@@ -25,8 +25,12 @@ Current charts:
 ## How The Layers Fit
 
 ```text
+iac
+  └─ creates runtime clusters + publishes registration metadata
+       │
+       ▼
 global-argocd
-  └─ creates the root ArgoCD Application
+  └─ registers runtime clusters + syncs one root app per Fleet path
        │
        ▼
 fleet
@@ -39,17 +43,24 @@ catalog (this repo)
        ▼
 stack / observability
   └─ publish deployable workload OCI charts
+       │
+       ▼
+runtime cluster
+  └─ runs one or more stack apps plus optional shared observability
 ```
 
 For the current AWS shape:
 
-1. `global-argocd` creates one root `Application` per runtime cluster
-2. that root app uses `../fleet/clusters/<cluster-name>/values.yaml`
-3. it renders `blueprint-aws-standard` from `oci://ghcr.io/jetscale-ai/catalog`
-4. `blueprint-aws-standard` then renders:
+1. `../iac` creates the runtime cluster and publishes non-sensitive registration
+   metadata
+2. `global-argocd` registers that runtime cluster and creates one root
+   `Application` for its Fleet path
+3. that root app uses `../fleet/clusters/<cluster-name>/values.yaml`
+4. it renders `blueprint-aws-standard` from `oci://ghcr.io/jetscale-ai/catalog`
+5. `blueprint-aws-standard` then renders:
    - one child ArgoCD app per `stackApps[]` entry
    - zero or one shared `observability-core` child app for the cluster
-5. those child apps pull the actual workload charts from `../stack` and
+6. those child apps pull the actual workload charts from `../stack` and
    `../observability`
 
 So this repo is the pattern bridge between control-plane bootstrap and workload
