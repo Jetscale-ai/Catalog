@@ -2,7 +2,7 @@ name: "CD: Publish Blueprints"
 run-name: >-
   ${{
     github.event_name == 'workflow_run' &&
-    format('CD: Publish Blueprints <- {0}', github.event.workflow_run.head_branch) ||
+    format('CD: Publish Blueprints ← {0}', github.event.workflow_run.head_branch) ||
     format('CD: Publish Blueprints (manual:{0})', github.ref_name)
   }}
 
