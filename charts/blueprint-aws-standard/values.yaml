@@ -39,11 +39,15 @@ stack:
     - envs/aws/aws.yaml
     - envs/aws/prod/default.yaml
   extraValueFiles: []
+  # Optional inline Helm values applied after all stack repo value files.
+  values: {}
 
 # Preferred multi-app configuration for one or more ../stack umbrella apps on a
 # single runtime cluster. When non-empty, the chart renders one child
 # Application per entry. Legacy single-stack values remain supported via the
-# `stack` block above for backward compatibility.
+# `stack` block above for backward compatibility. Each entry may also carry
+# `values` for Fleet-owned runtime overrides such as image tags, replica counts,
+# or feature toggles.
 stackApps: []
 
 observability:

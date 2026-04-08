@@ -7,10 +7,12 @@
       "createNamespace" .Values.stack.createNamespace
       "valueFiles" .Values.stack.valueFiles
       "extraValueFiles" (.Values.stack.extraValueFiles | default (list))
+      "values" (.Values.stack.values | default dict)
       "enabled" .Values.enabled.stack) }}
 {{- end }}
 {{- range $stackApp := $stackApps }}
 {{- if ($stackApp.enabled | default true) }}
+{{- $stackAppValues := $stackApp.values | default dict }}
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -42,6 +44,10 @@ spec:
           {{- range $stackApp.extraValueFiles | default list }}
           - $stackValues/{{ . }}
           {{- end }}
+        {{- if gt (len $stackAppValues) 0 }}
+        values: |
+{{ toYaml $stackAppValues | indent 10 }}
+        {{- end }}
 
   destination:
     server: {{ $root.Values.cluster.server }}
