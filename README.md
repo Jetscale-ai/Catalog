@@ -8,6 +8,9 @@ This repository defines the reusable deployment patterns that ArgoCD consumes.
 It does not deploy workloads itself. Instead, it publishes blueprint Helm charts
 that render ArgoCD `Application` objects.
 
+Canonical cross-repo contract lives in
+`../governance/docs/decisions/DR-009-gitops-runtime-ownership-contract.md`.
+
 ## What These Artifacts Are
 
 Each chart in `catalog` is a blueprint:
@@ -105,6 +108,16 @@ Catalog does not own live version pins for workloads.
 - the reusable contract is `1..n` stack apps plus optional cluster-wide
   observability
 
+When Fleet provides inline overrides, Catalog applies this value precedence:
+
+1. `../stack` chart defaults
+2. shared stack value files
+3. app-specific stack value files
+4. Fleet inline `stackApps[].values`
+
+That precedence is the additive migration path: Fleet can take over live runtime
+state without forcing an immediate rewrite of the existing stack overlays.
+
 ### Adding a new capability
 
 1. Update the appropriate blueprint chart in `charts/`
@@ -113,6 +126,9 @@ Catalog does not own live version pins for workloads.
 4. Merge via PR using conventional commits
 5. Let GitHub Actions publish a new OCI chart version
 6. Bump the consumed blueprint version in `../global-argocd` when ready
+
+Change Catalog only when the render contract changes. If you only need to change
+what is live in a cluster, edit Fleet instead.
 
 ## Repository Layout
 
