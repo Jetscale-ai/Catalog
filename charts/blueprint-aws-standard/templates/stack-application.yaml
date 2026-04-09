@@ -11,7 +11,7 @@
       "enabled" .Values.enabled.stack) }}
 {{- end }}
 {{- range $stackApp := $stackApps }}
-{{- if ($stackApp.enabled | default true) }}
+{{- if or (not (hasKey $stackApp "enabled")) $stackApp.enabled }}
 {{- $stackAppValues := $stackApp.values | default dict }}
 apiVersion: argoproj.io/v1alpha1
 kind: Application
