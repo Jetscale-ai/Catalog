@@ -11,6 +11,22 @@ that render ArgoCD `Application` objects.
 Canonical cross-repo contract lives in
 `../governance/docs/decisions/DR-009-gitops-runtime-ownership-contract.md`.
 
+## Identity And Responsibility Breakdown
+
+`catalog` is the pattern layer between runtime state and workload artifacts.
+
+| Repo | Identity | Primary responsibility |
+| ---- | -------- | ---------------------- |
+| `fleet` | Runtime state | Decide which workloads exist, where they run, and which versions/overrides are live |
+| `catalog` | Pattern | Compile Fleet values into ArgoCD child `Application` objects |
+| `global-argocd` | Control plane | Sync the root app that consumes Fleet plus Catalog |
+| `stack` | Workload artifact | Publish the `jetscale` chart and shared workload values |
+| `observability` | Platform artifact | Publish the optional cluster-wide telemetry chart |
+
+That means Catalog should change only when the reusable render contract changes.
+If the goal is just to promote a workload version or tweak one runtime, edit
+`fleet` instead.
+
 ## What These Artifacts Are
 
 Each chart in `catalog` is a blueprint:
@@ -66,11 +82,12 @@ For the current AWS shape:
 6. those child apps pull the actual workload charts from `../stack` and
    `../observability`
 
-Runtime identity matters here:
+The identity split is:
 
-- Fleet path / Argo identity: `<provider>-<env>-<client>` such as
-  `aws-prod-jetscale`
-- Physical cluster name from `../iac`: `cluster.name` such as `jetscale-prod`
+- runtime ID: `<provider>-<env>-<client>` such as `aws-prod-jetscale`
+- physical cluster name: `cluster.name` from `../iac`, such as `jetscale-prod`
+- root app name: `root-<runtime.id>`
+- child app name: `<runtime.id>-<workload>`
 
 So this repo is the pattern bridge between control-plane bootstrap and workload
 deployment.

@@ -8,6 +8,14 @@ This repo defines **Blueprints** (patterns) as Helm charts that render ArgoCD `A
 - **ArgoCD applies it:** clusters converge by syncing `../fleet` → Blueprint chart → rendered Applications.
 - **Why it matters here:** we keep the blueprint *shape* stable and reusable; we never pin live versions in Catalog.
 
+Target ownership split:
+
+- `catalog` owns reusable render logic
+- `fleet` owns per-runtime live state
+- `global-argocd` owns root-app bootstrap and blueprint pin selection
+- `stack` and `observability` own immutable workload artifacts
+- `iac` owns runtime-cluster provisioning and registration contracts
+
 ## Phase 1: The AWS Standard
 
 - [x] Create `charts/blueprint-aws-standard`.
@@ -24,6 +32,8 @@ This repo defines **Blueprints** (patterns) as Helm charts that render ArgoCD `A
       `aws-prod-jetscale`, `aws-prod-codewords`, and `aws-prod-glaciergrid`
 - [ ] Add any required system-layer Applications once the control-plane split is
       fully settled
+- [ ] Keep runtime identity conventions stable: root `root-<runtime.id>`,
+      child `<runtime.id>-<workload>`, physical destination from `cluster.server`
 
 ## Phase 2: Repo-Wide Release Discipline
 
@@ -32,6 +42,8 @@ This repo defines **Blueprints** (patterns) as Helm charts that render ArgoCD `A
 - [ ] Keep the version stream repo-wide even before Azure is active
 - [x] Document the contract clearly enough that `../global-argocd` and
       `../fleet` can consume published versions without ambiguity
+- [ ] Make blueprint release notes explicit about whether a release requires
+      only a `global-argocd` pin bump or also coordinated Fleet changes
 
 ## Phase 3: Azure Parity On The Same Version Stream
 
