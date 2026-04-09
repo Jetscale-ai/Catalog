@@ -20,6 +20,9 @@ metadata:
   namespace: {{ $root.Values.argocd.namespace }}
   labels:
     {{- include "blueprint.argoLabels" $root | nindent 4 }}
+    app.kubernetes.io/name: {{ printf "%s-%s" (include "blueprint.fullname" $root) $stackApp.name | quote }}
+    jetscale.ai/runtime-role: "workload"
+    jetscale.ai/workload-name: {{ $stackApp.name | quote }}
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:

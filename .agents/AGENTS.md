@@ -22,9 +22,13 @@ before committing.
 **With inline overrides:**
 
 ```bash
-helm template global-services-live charts/blueprint-aws-standard \
+helm template aws-prod-jetscale charts/blueprint-aws-standard \
   --set versions.stack=0.32.1 \
-  --set cluster.name=global-services-live \
+  --set runtime.id=aws-prod-jetscale \
+  --set runtime.provider=aws \
+  --set runtime.environment=prod \
+  --set runtime.client=jetscale \
+  --set cluster.name=jetscale-prod \
   --set "stackApps[0].name=jetscale-console" \
   --set "stackApps[0].namespace=jetscale-console" \
   --set "stackApps[0].valueFiles[0]=envs/aws/aws.yaml" \
@@ -35,8 +39,8 @@ helm template global-services-live charts/blueprint-aws-standard \
 **With fleet values file (end-to-end preview):**
 
 ```bash
-helm template global-services-live charts/blueprint-aws-standard \
-  -f ../fleet/clusters/global-services-live/values.yaml
+helm template aws-prod-jetscale charts/blueprint-aws-standard \
+  -f ../fleet/clusters/aws-prod-jetscale/values.yaml
 ```
 
 Expected: valid YAML containing `apiVersion: argoproj.io/v1alpha1` multi-source

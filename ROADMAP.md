@@ -21,7 +21,7 @@ This repo defines **Blueprints** (patterns) as Helm charts that render ArgoCD `A
 - [x] Add optional `observability` child Applications alongside one or more
       `stack` child Applications
 - [ ] Validate the per-runtime-cluster shape against Fleet paths such as
-      `jetscale-prod`, `codewords-prod`, and `glaciergrid-prod`
+      `aws-prod-jetscale`, `aws-prod-codewords`, and `aws-prod-glaciergrid`
 - [ ] Add any required system-layer Applications once the control-plane split is
       fully settled
 

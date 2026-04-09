@@ -58,13 +58,19 @@ For the current AWS shape:
    metadata
 2. `global-argocd` registers that runtime cluster and creates one root
    `Application` for its Fleet path
-3. that root app uses `../fleet/clusters/<cluster-name>/values.yaml`
+3. that root app uses `../fleet/clusters/<runtime-id>/values.yaml`
 4. it renders `blueprint-aws-standard` from `oci://ghcr.io/jetscale-ai/catalog`
 5. `blueprint-aws-standard` then renders:
    - one child ArgoCD app per `stackApps[]` entry
    - zero or one shared `observability-core` child app for the cluster
 6. those child apps pull the actual workload charts from `../stack` and
    `../observability`
+
+Runtime identity matters here:
+
+- Fleet path / Argo identity: `<provider>-<env>-<client>` such as
+  `aws-prod-jetscale`
+- Physical cluster name from `../iac`: `cluster.name` such as `jetscale-prod`
 
 So this repo is the pattern bridge between control-plane bootstrap and workload
 deployment.

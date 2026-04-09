@@ -9,6 +9,8 @@ metadata:
   namespace: {{ $root.Values.argocd.namespace }}
   labels:
     {{- include "blueprint.argoLabels" $root | nindent 4 }}
+    app.kubernetes.io/name: {{ printf "%s-observability" (include "blueprint.fullname" $root) | quote }}
+    jetscale.ai/runtime-role: "observability"
   annotations:
     argocd.argoproj.io/sync-wave: "-10"
   finalizers:

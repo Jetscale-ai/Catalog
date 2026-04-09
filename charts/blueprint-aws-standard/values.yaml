@@ -30,6 +30,15 @@ cluster:
   name: ""
   server: https://kubernetes.default.svc
 
+# GitOps/runtime identity (injected by ../fleet). This controls Fleet paths,
+# ArgoCD application names, and labels; it is intentionally separate from the
+# physical cluster name above.
+runtime:
+  id: ""
+  provider: ""
+  environment: ""
+  client: ""
+
 # Per-workload configuration
 stack:
   namespace: ""
