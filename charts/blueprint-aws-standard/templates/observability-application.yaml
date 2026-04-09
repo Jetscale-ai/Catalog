@@ -1,6 +1,7 @@
 {{- $root := . }}
 {{- $observability := .Values.observability | default dict }}
 {{- $observabilityValues := $observability.values | default dict }}
+{{- $provider := $root.Values.runtime.provider | default "" }}
 {{- if and ($root.Values.enabled.observability | default false) $root.Values.versions.observability }}
 apiVersion: argoproj.io/v1alpha1
 kind: Application
@@ -23,6 +24,13 @@ spec:
     targetRevision: {{ $root.Values.versions.observability }}
     helm:
       releaseName: {{ $observability.releaseName | default "observability" }}
+      {{- if eq $provider "aws" }}
+      valueFiles:
+        - values-aws.yaml
+      {{- else if eq $provider "azure" }}
+      valueFiles:
+        - values-azure.yaml
+      {{- end }}
       {{- if gt (len $observabilityValues) 0 }}
       values: |
 {{ toYaml $observabilityValues | indent 8 }}
