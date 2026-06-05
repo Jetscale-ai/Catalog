@@ -46,6 +46,9 @@ spec:
       - CreateNamespace={{ $observability.createNamespace | default true }}
       - ServerSideApply=true
       - ServerSideDiff=true
+    managedNamespaceMetadata:
+      labels:
+        jetscale.ai/observability: "enabled"
     retry:
       limit: 3
       backoff:
