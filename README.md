@@ -21,7 +21,7 @@ Canonical cross-repo contract lives in
 | `catalog` | Pattern | Compile Fleet values into ArgoCD child `Application` objects |
 | `global-argocd` | Control plane | Sync the root app that consumes Fleet plus Catalog |
 | `stack` | Workload artifact | Publish the `jetscale` chart and shared workload values |
-| `observability` | Platform artifact | Publish the optional cluster-wide telemetry chart |
+| `observability` | Platform artifact | Publish the optional cluster-wide telemetry chart and the `ops-dashboard` chart |
 
 That means Catalog should change only when the reusable render contract changes.
 If the goal is just to promote a workload version or tweak one runtime, edit
@@ -65,7 +65,8 @@ stack / observability
        │
        ▼
 runtime cluster
-  └─ runs one or more stack apps plus optional shared observability
+  └─ runs one or more stack apps, optional shared observability, and an
+     optional ops-dashboard platform app
 ```
 
 For the current AWS shape:
@@ -79,8 +80,10 @@ For the current AWS shape:
 5. `blueprint-aws-standard` then renders:
    - one child ArgoCD app per `stackApps[]` entry
    - zero or one shared `observability-core` child app for the cluster
+   - zero or one `ops-dashboard` platform child app when Fleet sets
+     `enabled.opsDashboard` and `versions.opsDashboard`
 6. those child apps pull the actual workload charts from `../stack` and
-   `../observability`
+   `../observability` (`observability-core` and `ops-dashboard`)
 
 The identity split is:
 
@@ -128,8 +131,25 @@ Catalog does not own live version pins for workloads.
 - blueprint chart versions are published from this repo
 - workload chart versions are injected into blueprint values by `../fleet`
 - cluster-specific values belong in `../fleet`
-- the reusable contract is `1..n` stack apps plus optional cluster-wide
-  observability
+- the reusable contract is `1..n` stack apps, optional cluster-wide
+  observability, and an optional `ops-dashboard` platform app
+
+Fleet enables `ops-dashboard` with:
+
+- `enabled.opsDashboard: true`
+- `versions.opsDashboard`: released `ops-dashboard` chart version
+- `opsDashboard.namespace`, `opsDashboard.releaseName`, and
+  `opsDashboard.createNamespace`
+- optional `opsDashboard.valueFiles` (paths inside the OCI chart)
+- optional `opsDashboard.values` for non-secret Homepage and oauth2-proxy
+  settings
+
+Catalog owns the chart source (`repositories.opsDashboard.repoURL` =
+`ghcr.io/jetscale-ai/charts`, chart `ops-dashboard`). The child Application
+name is `<runtime.id>-ops-dashboard`. Both the enable flag and a non-empty
+version are required; otherwise the blueprint renders no ops-dashboard
+Application. `global-argocd` consumes that behavior only after it pins a
+released Catalog chart that contains this template.
 
 When Fleet provides inline overrides, Catalog applies this value precedence:
 

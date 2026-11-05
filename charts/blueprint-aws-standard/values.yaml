@@ -11,6 +11,9 @@ argocd:
 versions:
   stack: ""
   observability: ""
+  # Observability OCI chart `ops-dashboard` (Homepage + oauth2-proxy).
+  # Empty disables the child app even when enabled.opsDashboard is true.
+  opsDashboard: ""
 
 # Repository configuration
 repositories:
@@ -24,6 +27,11 @@ repositories:
   observability:
     repoURL: ghcr.io/jetscale-ai/charts
     chart: observability-core
+  # Same GHCR registry as observability-core. Chart name stays separate so
+  # ArgoCD Helm OCI sources point at the published repo base.
+  opsDashboard:
+    repoURL: ghcr.io/jetscale-ai/charts
+    chart: ops-dashboard
 
 # Cluster identity (injected by ../fleet)
 cluster:
@@ -65,7 +73,21 @@ observability:
   createNamespace: true
   values: {}
 
+# Optional platform app. Fleet enables it per runtime (first target:
+# aws-prod-jetscale). Catalog owns the chart source; Fleet owns the version
+# pin, namespace, and non-secret Helm overrides. Do not put tokens, client
+# secrets, or cookie secrets in `values`.
+opsDashboard:
+  namespace: ops-dashboard
+  releaseName: ops-dashboard
+  createNamespace: true
+  # Optional value files packaged inside the ops-dashboard OCI chart.
+  # Leave empty unless Fleet selects files that chart publishes.
+  valueFiles: []
+  values: {}
+
 # Application enablement flags
 enabled:
   stack: true
   observability: false
+  opsDashboard: false

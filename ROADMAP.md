@@ -28,6 +28,8 @@ Target ownership split:
 - [x] Add CI + OCI publish workflow for the AWS blueprint
 - [x] Add optional `observability` child Applications alongside one or more
       `stack` child Applications
+- [x] Add an optional `ops-dashboard` platform child Application, rendered
+      only when Fleet sets `enabled.opsDashboard` and `versions.opsDashboard`
 - [ ] Validate the per-runtime-cluster shape against Fleet paths such as
       `aws-prod-jetscale`, `aws-prod-codewords`, and `aws-prod-glaciergrid`
 - [ ] Add any required system-layer Applications once the control-plane split is

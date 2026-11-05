@@ -36,6 +36,30 @@ helm template aws-prod-jetscale charts/blueprint-aws-standard \
   --set "stackApps[0].extraValueFiles[0]=envs/aws/prod/jetscale-console.yaml"
 ```
 
+**With ops-dashboard enabled (renders an extra child Application):**
+
+```bash
+helm template aws-prod-jetscale charts/blueprint-aws-standard \
+  --set versions.stack=0.32.1 \
+  --set versions.opsDashboard=0.1.0 \
+  --set enabled.opsDashboard=true \
+  --set runtime.id=aws-prod-jetscale \
+  --set runtime.provider=aws \
+  --set runtime.environment=prod \
+  --set runtime.client=jetscale \
+  --set cluster.name=jetscale-prod \
+  --set "stackApps[0].name=jetscale-console" \
+  --set "stackApps[0].namespace=jetscale-console" \
+  --set "opsDashboard.namespace=ops-dashboard" \
+  --set "opsDashboard.valueFiles[0]=values-aws.yaml" \
+  --set "opsDashboard.values.ingress.host=ops.example.invalid"
+```
+
+Expected when enabled: an `Application` named `<runtime.id>-ops-dashboard`
+whose Helm source is `ghcr.io/jetscale-ai/charts` chart `ops-dashboard` at
+`versions.opsDashboard`. When `enabled.opsDashboard` is false or
+`versions.opsDashboard` is empty, that Application is absent.
+
 **With fleet values file (end-to-end preview):**
 
 ```bash
