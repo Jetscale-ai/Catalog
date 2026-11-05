@@ -1,0 +1,56 @@
+{{- $root := . }}
+{{- $opsDashboard := .Values.opsDashboard | default dict }}
+{{- $opsDashboardValues := $opsDashboard.values | default dict }}
+{{- $opsDashboardValueFiles := $opsDashboard.valueFiles | default list }}
+{{- if and ($root.Values.enabled.opsDashboard | default false) $root.Values.versions.opsDashboard }}
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: {{ include "blueprint.fullname" $root }}-ops-dashboard
+  namespace: {{ $root.Values.argocd.namespace }}
+  labels:
+    {{- include "blueprint.argoLabels" $root | nindent 4 }}
+    app.kubernetes.io/name: {{ printf "%s-ops-dashboard" (include "blueprint.fullname" $root) | quote }}
+    jetscale.ai/runtime-role: "platform"
+    jetscale.ai/platform-app: "ops-dashboard"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: {{ $root.Values.argocd.project }}
+  source:
+    repoURL: {{ $root.Values.repositories.opsDashboard.repoURL }}
+    chart: {{ $root.Values.repositories.opsDashboard.chart }}
+    targetRevision: {{ $root.Values.versions.opsDashboard }}
+    helm:
+      releaseName: {{ $opsDashboard.releaseName | default "ops-dashboard" }}
+      {{- if gt (len $opsDashboardValueFiles) 0 }}
+      valueFiles:
+        {{- range $opsDashboardValueFiles }}
+        - {{ . }}
+        {{- end }}
+      {{- end }}
+      {{- if gt (len $opsDashboardValues) 0 }}
+      values: |
+{{ toYaml $opsDashboardValues | indent 8 }}
+      {{- end }}
+  destination:
+    server: {{ $root.Values.cluster.server }}
+    namespace: {{ $opsDashboard.namespace | default "ops-dashboard" }}
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace={{ $opsDashboard.createNamespace | default true }}
+      - ServerSideApply=true
+      - ServerSideDiff=true
+    managedNamespaceMetadata:
+      labels:
+        jetscale.ai/platform-app: "ops-dashboard"
+    retry:
+      limit: 3
+      backoff:
+        duration: 30s
+        factor: 2
+        maxDuration: 3m
+{{- end }}
